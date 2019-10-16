@@ -7,19 +7,18 @@ from setuptools import setup
 import re
 import os
 import io
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from ConfigParser import ConfigParser
+from configparser import ConfigParser
 
-MODULE2PREFIX = {}
-
+MODULE = 'stock_valued_delivery_cost'
+PREFIX = 'trytonspain'
+MODULE2PREFIX = {
+    'stock_valued': 'trytonspain',
+    }
 
 def read(fname):
     return io.open(
         os.path.join(os.path.dirname(__file__), fname),
         'r', encoding='utf-8').read()
-
 
 def get_require_version(name):
     if minor_version % 2:
@@ -40,8 +39,6 @@ version = info.get('version', '0.0.1')
 major_version, minor_version, _ = version.split('.', 2)
 major_version = int(major_version)
 minor_version = int(minor_version)
-name = 'trytonspain_stock_valued_delivery_cost'
-download_url = 'https://bitbucket.org/trytonspain/trytond-stock_valued_delivery_cost'
 
 requires = []
 for dep in info.get('depends', []):
@@ -51,27 +48,38 @@ for dep in info.get('depends', []):
 requires.append(get_require_version('trytond'))
 
 tests_require = []
-dependency_links = []
+series = '%s.%s' % (major_version, minor_version)
+if minor_version % 2:
+    branch = 'default'
+else:
+    branch = series
+dependency_links = [
+    ('hg+https://bitbucket.org/trytonspain/'
+        'trytond-stock_valued@%(branch)s'
+        '#egg=trytonspain-stock_valued%(series)s' % {
+            'branch': branch,
+            'series': series,
+            }),
+
+    ]
 if minor_version % 2:
     # Add development index for testing with proteus
     dependency_links.append('https://trydevpi.tryton.org/')
 
-setup(name=name,
+setup(name='%s_%s' % (PREFIX, MODULE),
     version=version,
-    description='Tryton Stock Valued Delivery Cost Module',
+    description='Tryton Account Payment Gateway Sale Module',
     long_description=read('README'),
-    author='TrytonSpain',
-    author_email='info@trytonspain.com',
     url='https://bitbucket.org/trytonspain/',
-    download_url=download_url,
+    download_url='https://bitbucket.org/trytonspain/trytond-%s' % MODULE,
     keywords='',
-    package_dir={'trytond.modules.stock_valued_delivery_cost': '.'},
+    package_dir={'trytond.modules.%s' % MODULE: '.'},
     packages=[
-        'trytond.modules.stock_valued_delivery_cost',
-        'trytond.modules.stock_valued_delivery_cost.tests',
+        'trytond.modules.%s' % MODULE,
+        'trytond.modules.%s.tests' % MODULE,
         ],
     package_data={
-        'trytond.modules.stock_valued_delivery_cost': (info.get('xml', [])
+        'trytond.modules.%s' % MODULE: (info.get('xml', [])
             + ['tryton.cfg', 'view/*.xml', 'locale/*.po', '*.odt',
                 'icons/*.svg', 'tests/*.rst']),
         },
@@ -83,14 +91,24 @@ setup(name=name,
         'Intended Audience :: Financial and Insurance Industry',
         'Intended Audience :: Legal Industry',
         'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Natural Language :: Bulgarian',
         'Natural Language :: Catalan',
+        'Natural Language :: Czech',
+        'Natural Language :: Dutch',
         'Natural Language :: English',
+        'Natural Language :: French',
+        'Natural Language :: German',
+        'Natural Language :: Hungarian',
+        'Natural Language :: Italian',
+        'Natural Language :: Portuguese (Brazilian)',
+        'Natural Language :: Russian',
+        'Natural Language :: Slovenian',
         'Natural Language :: Spanish',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Office/Business',
@@ -101,8 +119,8 @@ setup(name=name,
     zip_safe=False,
     entry_points="""
     [trytond.modules]
-    stock_valued_delivery_cost = trytond.modules.stock_valued_delivery_cost
-    """,
+    %s = trytond.modules.%s
+    """ % (MODULE, MODULE),
     test_suite='tests',
     test_loader='trytond.test_loader:Loader',
     tests_require=tests_require,

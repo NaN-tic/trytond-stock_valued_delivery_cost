@@ -8,8 +8,7 @@ from trytond.model import fields
 __all__ = ['ShipmentOut']
 
 
-class ShipmentOut:
-    __metaclass__ = PoolMeta
+class ShipmentOut(metaclass=PoolMeta):
     __name__ = 'stock.shipment.out'
     sale_delivery_cost = fields.Function(fields.Many2One('sale.line',
         'Sale Delivery Cost'), 'get_sale_line')
