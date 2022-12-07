@@ -26,16 +26,20 @@ class ShipmentOut(metaclass=PoolMeta):
         return res
 
     def calc_amounts(self):
-        Tax = Pool().get('account.tax')
+        pool = Pool()
+        Tax = pool.get('account.tax')
+        Date = pool.get('ir.date')
 
         result = super(ShipmentOut, self).calc_amounts()
+
+        date = self.effective_date or self.planned_date or Date.today()
 
         # add delivery cost in stock valued
         if self.sale_delivery_cost:
             untaxed_amount = self.sale_delivery_cost.amount
             tax_list = Tax.compute(self.sale_delivery_cost.taxes,
                 self.sale_delivery_cost.unit_price or Decimal('0.0'),
-                self.sale_delivery_cost.quantity or 0.0)
+                self.sale_delivery_cost.quantity or 0.0, date)
             tax_amount = sum([self.company.currency.round(t['amount'])
                     for t in tax_list], Decimal('0.0'))
             result['untaxed_amount'] += untaxed_amount
