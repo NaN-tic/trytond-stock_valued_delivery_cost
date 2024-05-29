@@ -38,10 +38,10 @@ class ShipmentOut(metaclass=PoolMeta):
         if self.sale_delivery_cost:
             untaxed_amount = self.sale_delivery_cost.amount
             tax_list = Tax.compute(self.sale_delivery_cost.taxes,
-                self.sale_delivery_cost.unit_price or Decimal('0.0'),
+                self.sale_delivery_cost.unit_price or Decimal(0),
                 self.sale_delivery_cost.quantity or 0.0, date)
             tax_amount = sum([self.company.currency.round(t['amount'])
-                    for t in tax_list], Decimal('0.0'))
+                    for t in tax_list], Decimal(0))
             result['untaxed_amount'] += untaxed_amount
             result['tax_amount'] += tax_amount
             result['total_amount'] += (untaxed_amount + tax_amount)
