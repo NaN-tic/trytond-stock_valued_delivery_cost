@@ -5,8 +5,6 @@ from decimal import Decimal
 from trytond.pool import Pool, PoolMeta
 from trytond.model import fields
 
-__all__ = ['ShipmentOut']
-
 
 class ShipmentOut(metaclass=PoolMeta):
     __name__ = 'stock.shipment.out'
@@ -25,25 +23,33 @@ class ShipmentOut(metaclass=PoolMeta):
                             break
         return res
 
-    def calc_amounts(self):
+    @classmethod
+    def get_amounts(cls, shipments, names):
         pool = Pool()
         Tax = pool.get('account.tax')
         Date = pool.get('ir.date')
 
-        result = super(ShipmentOut, self).calc_amounts()
+        result = super().get_amounts(shipments, names)
 
-        date = self.effective_date or self.planned_date or Date.today()
+        for shipment in shipments:
+            # in case has cache, not sum delivery cost
+            if shipment.untaxed_amount_cache is not None:
+                continue
 
-        # add delivery cost in stock valued
-        if self.sale_delivery_cost:
-            untaxed_amount = self.sale_delivery_cost.amount
-            tax_list = Tax.compute(self.sale_delivery_cost.taxes,
-                self.sale_delivery_cost.unit_price or Decimal(0),
-                self.sale_delivery_cost.quantity or 0.0, date)
-            tax_amount = sum([self.company.currency.round(t['amount'])
-                    for t in tax_list], Decimal(0))
-            result['untaxed_amount'] += untaxed_amount
-            result['tax_amount'] += tax_amount
-            result['total_amount'] += (untaxed_amount + tax_amount)
+            # add delivery cost in stock valued
+            if shipment.sale_delivery_cost:
+                date = shipment.effective_date or shipment.planned_date or Date.today()
+                untaxed_amount = shipment.sale_delivery_cost.amount
+                tax_list = Tax.compute(shipment.sale_delivery_cost.taxes,
+                    shipment.sale_delivery_cost.unit_price or Decimal(0),
+                    shipment.sale_delivery_cost.quantity or 0.0, date)
+                tax_amount = sum([shipment.company.currency.round(t['amount'])
+                        for t in tax_list], Decimal(0))
+                if 'untaxed_amount' in names:
+                    result['untaxed_amount'][shipment.id] += untaxed_amount
+                if 'tax_amount' in names:
+                    result['tax_amount'][shipment.id] += tax_amount
+                if 'total_amount' in names:
+                    result['total_amount'][shipment.id] += (untaxed_amount + tax_amount)
 
         return result
