@@ -134,7 +134,7 @@ class Test(unittest.TestCase):
 
         # check shipment amounts
         shipment, = sale.shipments
-        self.assertEqual(shipment.cost_method, 'order')
+        self.assertEqual(shipment.cost_sale_method, 'order')
         assertEqual(shipment.carrier, carrier)
         self.assertEqual(shipment.untaxed_amount, Decimal('103.00'))
         self.assertEqual(shipment.tax_amount, Decimal('10.30'))
@@ -174,7 +174,7 @@ class Test(unittest.TestCase):
 
         # check shipment amounts
         shipment, = sale.shipments
-        self.assertEqual(shipment.cost_method, None)
+        self.assertEqual(shipment.cost_sale_method, None)
         assertEqual(shipment.carrier, carrier)
         self.assertEqual(shipment.untaxed_amount, Decimal('100.00'))
         self.assertEqual(shipment.tax_amount, Decimal('10.00'))
