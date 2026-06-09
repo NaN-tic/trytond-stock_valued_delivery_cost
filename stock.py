@@ -16,7 +16,8 @@ class ShipmentOut(metaclass=PoolMeta):
         res = {n: {s.id: None for s in shipments} for n in names}
         for name in names:
             for shipment in shipments:
-                if (shipment.origin and shipment.origin.__name__ == 'sale.sale'):
+                if (shipment.origin
+                        and getattr(shipment.origin, '__name__', None) == 'sale.sale'):
                     for line in shipment.origin.lines:
                         if name == 'sale_delivery_cost' and line.shipment_cost:
                             res[name][shipment.id] = line.id
